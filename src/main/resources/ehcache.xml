@@ -1,0 +1,20 @@
+<config
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns='http://www.ehcache.org/v3'
+        xsi:schemaLocation="http://www.ehcache.org/v3
+            http://www.ehcache.org/schema/ehcache-core-3.7.xsd">
+
+    <persistence directory="uploads/cache" />
+
+    <cache-template name="image-template">
+        <expiry>
+            <ttl unit="minutes">60</ttl> </expiry>
+
+        <resources>
+            <heap unit="entries">50</heap> <offheap unit="MB">100</offheap> <disk persistent="true" unit="MB">200</disk> </resources>
+    </cache-template>
+
+    <cache alias="thumbnails" uses-template="image-template">
+        <key-type>java.lang.Long</key-type> <value-type>[B</value-type> </cache>
+
+</config>
