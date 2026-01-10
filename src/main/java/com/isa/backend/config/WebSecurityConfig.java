@@ -54,7 +54,7 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowCredentials(true);
-                    config.addAllowedOrigin("http://localhost:4200"); // Dozvoli Angularu
+                    config.addAllowedOrigin("http://localhost:4200");
                     config.addAllowedHeader("*");
                     config.addAllowedMethod("*");
                     return config;
@@ -70,6 +70,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/videos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/videos/*/thumbnail").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/videos/*/stream").permitAll()
+                        .requestMatchers("/socket/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
