@@ -41,6 +41,7 @@ public class VideoServiceImpl implements VideoService{
 
     @Override
     @Transactional(rollbackFor = Exception.class, timeout = 30)
+    //@Transactional(rollbackFor = Exception.class, timeout = 1)
     public VideoPost createVideoPost(VideoPostUploadDto dto, MultipartFile videoFile, MultipartFile thumbnailFile, String username) throws IOException {
         User user = userRepository.findByUsername(username);
         if(user == null){
@@ -57,6 +58,9 @@ public class VideoServiceImpl implements VideoService{
 
         Files.copy(videoFile.getInputStream(), videoPath);
         Files.copy(thumbnailFile.getInputStream(), thumbnailPath);
+
+        //Simulacija rollback operacije
+        //try { Thread.sleep(3000); } catch (InterruptedException e) {}
 
         try {
             VideoPost post = new VideoPost();
