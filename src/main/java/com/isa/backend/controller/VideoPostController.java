@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Principal;
 import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -26,9 +27,9 @@ public class VideoPostController {
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> uploadVideo(@RequestPart("data") VideoPostUploadDto dto, @RequestPart("video") MultipartFile videoFile, @RequestPart("thumbnail") MultipartFile thumbnailFile){
+    public ResponseEntity<?> uploadVideo(@RequestPart("data") VideoPostUploadDto dto, @RequestPart("video") MultipartFile videoFile, @RequestPart("thumbnail") MultipartFile thumbnailFile, Principal principal){
         try{
-            VideoPost createdPost = videoService.createVideoPost(dto, videoFile, thumbnailFile);
+            VideoPost createdPost = videoService.createVideoPost(dto, videoFile, thumbnailFile, principal.getName());
             return ResponseEntity.ok(createdPost);
         } catch(Exception e) {
             e.printStackTrace();

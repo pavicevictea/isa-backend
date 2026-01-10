@@ -2,7 +2,9 @@ package com.isa.backend.service.impl;
 
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.VideoPost;
+import com.isa.backend.model.User;
 import com.isa.backend.repository.VideoPostRepository;
+import com.isa.backend.repository.UserRepository;
 import com.isa.backend.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +26,9 @@ public class VideoServiceImpl implements VideoService{
     @Autowired
     private VideoPostRepository videoPostRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Value("${storage.video-path}")
     private String videoDir;
 
@@ -32,7 +37,12 @@ public class VideoServiceImpl implements VideoService{
 
     @Override
     @Transactional(rollbackFor = Exception.class, timeout = 30)
-    public VideoPost createVideoPost(VideoPostUploadDto dto, MultipartFile videoFile, MultipartFile thumbnailFile) throws IOException {
+    public VideoPost createVideoPost(VideoPostUploadDto dto, MultipartFile videoFile, MultipartFile thumbnailFile, String username) throws IOException {
+        User user = userRepository.findByUsername(username);
+        if(user == null){
+            throw new RuntimeException("User with username " + username + "not found!");
+        }
+
         Files.createDirectories(Paths.get(videoDir));
         Files.createDirectories(Paths.get(thumbnailDir));
 
@@ -52,6 +62,7 @@ public class VideoServiceImpl implements VideoService{
             post.setLocation(dto.getLocation());
             post.setVideoPath(videoPath.toString());
             post.setThumbnailPath(thumbnailPath.toString());
+            post.setUser(user);
 
             return videoPostRepository.save(post);
         } catch(Exception e) {

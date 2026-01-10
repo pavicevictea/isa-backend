@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface VideoService {
-    VideoPost createVideoPost(VideoPostUploadDto dto, MultipartFile videoFile, MultipartFile thumbnailFile) throws IOException;
+    VideoPost createVideoPost(VideoPostUploadDto dto, MultipartFile videoFile, MultipartFile thumbnailFile, String username) throws IOException;
     byte[] getThumbnail(Long videoId) throws IOException;
     List<VideoPost> getAllVideos();
     VideoPost getVideoById(Long id);
