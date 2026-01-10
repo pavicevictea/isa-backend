@@ -97,8 +97,14 @@ public class VideoServiceImpl implements VideoService{
         VideoPost video = videoPostRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Video not found with id: " + id));
 
-        this.simpMessagingTemplate.convertAndSend("/socket-publisher/viedeo-views", video);
+        this.simpMessagingTemplate.convertAndSend("/socket-publisher/video-views", video);
 
         return video;
+    }
+
+    @Override
+    public VideoPost findOnlyById(Long id) {
+        return videoPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Video not found with id: " + id));
     }
 }

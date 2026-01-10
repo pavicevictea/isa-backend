@@ -70,6 +70,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/videos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/videos/*/thumbnail").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/videos/*/stream").permitAll()
+                        .requestMatchers("/socket/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

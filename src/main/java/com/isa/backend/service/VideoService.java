@@ -11,4 +11,5 @@ public interface VideoService {
     byte[] getThumbnail(Long videoId) throws IOException;
     List<VideoPost> getAllVideos();
     VideoPost getVideoById(Long id);
+    VideoPost findOnlyById(Long id);
 }
