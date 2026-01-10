@@ -44,6 +44,9 @@ public class VideoPost implements Serializable {
     @Column(name = "location")
     private String location;
 
+    @Column(name = "views")
+    private Long views = 0L;
+
     public VideoPost(){
         this.createdAt = LocalDateTime.now();
     }
@@ -74,4 +77,7 @@ public class VideoPost implements Serializable {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public Long getViews() { return views; }
+    public void setViews(Long views) { this.views = views; }
 }
