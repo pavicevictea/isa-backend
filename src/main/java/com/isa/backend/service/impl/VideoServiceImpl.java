@@ -9,6 +9,7 @@ import com.isa.backend.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,9 @@ public class VideoServiceImpl implements VideoService{
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Value("${storage.video-path}")
     private String videoDir;
@@ -89,7 +93,12 @@ public class VideoServiceImpl implements VideoService{
 
     @Override
     public VideoPost getVideoById(Long id) {
-        return videoPostRepository.findById(id)
+        videoPostRepository.incrementViews(id);
+        VideoPost video = videoPostRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Video not found with id: " + id));
+
+        this.simpMessagingTemplate.convertAndSend("/socket-publisher/viedeo-views", video);
+
+        return video;
     }
 }
