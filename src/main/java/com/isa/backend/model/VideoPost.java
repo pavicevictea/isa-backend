@@ -27,7 +27,7 @@ public class VideoPost implements Serializable {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "VIDEO_TAGS", joinColumns = @JoinColumn(name = "video_id"))
     @Column(name = "tag")
     private List<String> tags;
