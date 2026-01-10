@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.util.List;
 
 @Service
 public class VideoServiceImpl implements VideoService{
@@ -68,5 +69,16 @@ public class VideoServiceImpl implements VideoService{
 
         Path path = Paths.get(post.getThumbnailPath());
         return Files.readAllBytes(path);
+    }
+
+    @Override
+    public List<VideoPost> getAllVideos() {
+        return videoPostRepository.findAll();
+    }
+
+    @Override
+    public VideoPost getVideoById(Long id) {
+        return videoPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Video not found with id: " + id));
     }
 }

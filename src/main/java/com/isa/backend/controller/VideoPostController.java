@@ -11,6 +11,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping(value = "/api/videos", produces = MediaType.APPLICATION_JSON_VALUE)
 public class VideoPostController {
@@ -31,13 +37,46 @@ public class VideoPostController {
     }
 
     @GetMapping(value = "/{id}/thumbnail", produces = MediaType.IMAGE_JPEG_VALUE)
-    @PreAuthorize("hasAnyRole('USER')")
     public ResponseEntity<?> getThumbnail(@PathVariable Long id){
         try{
             byte[] image = videoService.getThumbnail(id);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
         } catch(Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<VideoPost>> getAllVideos() {
+        return ResponseEntity.ok(videoService.getAllVideos());
+    }
+
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<VideoPost> getVideoById(@PathVariable Long id) {
+        VideoPost video = videoService.getVideoById(id);
+        if (video != null) {
+            return ResponseEntity.ok(video);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping(value = "/{id}/stream")
+    public ResponseEntity<org.springframework.core.io.Resource> streamVideo(@PathVariable Long id) {
+        try {
+            VideoPost post = videoService.getVideoById(id);
+            Path path = Paths.get(post.getVideoPath());
+            org.springframework.core.io.Resource video = new org.springframework.core.io.UrlResource(path.toUri());
+
+            String contentType = Files.probeContentType(path);
+            if (contentType == null) {
+                contentType = "video/mp4"; // Default
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(video);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }
