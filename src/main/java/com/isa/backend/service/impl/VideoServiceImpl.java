@@ -3,8 +3,10 @@ package com.isa.backend.service.impl;
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.VideoPost;
 import com.isa.backend.model.User;
+import com.isa.backend.model.VideoView;
 import com.isa.backend.repository.VideoPostRepository;
 import com.isa.backend.repository.UserRepository;
+import com.isa.backend.repository.VideoViewRepository;
 import com.isa.backend.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.List;
 
@@ -29,6 +32,9 @@ public class VideoServiceImpl implements VideoService{
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private VideoViewRepository videoViewRepository;
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
@@ -102,6 +108,12 @@ public class VideoServiceImpl implements VideoService{
                 .orElseThrow(() -> new RuntimeException("Video not found with id: " + id));
 
         this.simpMessagingTemplate.convertAndSend("/socket-publisher/video-views", video);
+
+        VideoView view = new VideoView();
+        view.setVideo(video);
+        view.setViewedAt(LocalDateTime.now());
+
+        videoViewRepository.save(view);
 
         return video;
     }
