@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name="VIDEOVIEW")
 public class VideoView {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,16 +23,13 @@ public class VideoView {
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
 
     public VideoPost getVideoPost() { return video; }
-
     public void setVideo(VideoPost video) { this.video = video; }
 
     public LocalDateTime getViewedAt() { return viewedAt; }
-
     public void setViewedAt(LocalDateTime viewedAt) { this.viewedAt = viewedAt; }
 }
