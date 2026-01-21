@@ -70,6 +70,8 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/videos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/videos/*/thumbnail").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/videos/*/stream").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/popular-videos/latest").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/videos/*/view").permitAll()
                         .requestMatchers("/socket/**").permitAll()
                         .anyRequest().authenticated()
                 )

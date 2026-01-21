@@ -82,4 +82,10 @@ public class VideoPostController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PostMapping("/{id}/view")
+    public ResponseEntity<?> incrementView(@PathVariable Long id) {
+        videoService.recordView(id);
+        return ResponseEntity.ok().build();
+    }
 }
