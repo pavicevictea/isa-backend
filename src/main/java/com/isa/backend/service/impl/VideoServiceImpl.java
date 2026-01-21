@@ -103,19 +103,22 @@ public class VideoServiceImpl implements VideoService{
 
     @Override
     public VideoPost getVideoById(Long id) {
-        videoPostRepository.incrementViews(id);
-        VideoPost video = videoPostRepository.findById(id)
+        return videoPostRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Video not found with id: " + id));
+    }
 
-        this.simpMessagingTemplate.convertAndSend("/socket-publisher/video-views", video);
+    @Override
+    @Transactional
+    public void recordView(Long id) {
+        videoPostRepository.incrementViews(id);
+        VideoPost video = videoPostRepository.findById(id).orElseThrow();
 
         VideoView view = new VideoView();
         view.setVideo(video);
         view.setViewedAt(LocalDateTime.now());
-
         videoViewRepository.save(view);
 
-        return video;
+        this.simpMessagingTemplate.convertAndSend("/socket-publisher/video-views", video);
     }
 
     @Override

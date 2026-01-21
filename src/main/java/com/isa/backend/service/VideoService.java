@@ -12,4 +12,5 @@ public interface VideoService {
     List<VideoPost> getAllVideos();
     VideoPost getVideoById(Long id);
     VideoPost findOnlyById(Long id);
+    void recordView(Long id);
 }
