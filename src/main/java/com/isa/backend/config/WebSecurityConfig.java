@@ -1,5 +1,6 @@
 package com.isa.backend.config;
 
+import com.isa.backend.monitoring.ActiveUsersMetric;
 import com.isa.backend.security.auth.RestAuthenticationEntryPoint;
 import com.isa.backend.security.auth.TokenAuthenticationFilter;
 import com.isa.backend.util.TokenUtils;
@@ -48,6 +49,9 @@ public class WebSecurityConfig {
     @Autowired
     private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
+    @Autowired
+    private ActiveUsersMetric activeUsersMetric;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -80,7 +84,7 @@ public class WebSecurityConfig {
                 .httpBasic(basic -> basic.disable())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
-        http.addFilterBefore(new TokenAuthenticationFilter(tokenUtils, userDetailsService), BasicAuthenticationFilter.class);
+        http.addFilterBefore(new TokenAuthenticationFilter(tokenUtils, userDetailsService, activeUsersMetric), BasicAuthenticationFilter.class);
         return http.build();
     }
 }

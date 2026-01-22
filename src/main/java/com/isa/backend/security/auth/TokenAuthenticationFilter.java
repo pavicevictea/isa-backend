@@ -1,5 +1,6 @@
 package com.isa.backend.security.auth;
 
+import com.isa.backend.monitoring.ActiveUsersMetric;
 import com.isa.backend.util.TokenUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -20,11 +21,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private UserDetailsService userDetailsService;
 
+    private ActiveUsersMetric activeUsersMetric;
+
     protected final Log LOGGER = LogFactory.getLog(getClass());
 
-    public TokenAuthenticationFilter(TokenUtils tokenHelper, UserDetailsService userDetailsService) {
+    public TokenAuthenticationFilter(TokenUtils tokenHelper, UserDetailsService userDetailsService, ActiveUsersMetric activeUsersMetric) {
         this.tokenUtils = tokenHelper;
         this.userDetailsService = userDetailsService;
+        this.activeUsersMetric = activeUsersMetric;
     }
 
     @Override
@@ -43,6 +47,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                         TokenBasedAuthentication authentication = new TokenBasedAuthentication(userDetails);
                         authentication.setToken(authToken);
                         SecurityContextHolder.getContext().setAuthentication(authentication);
+                        activeUsersMetric.recordUser(username);
                     }
                 }
             }
