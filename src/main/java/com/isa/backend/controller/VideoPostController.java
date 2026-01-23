@@ -88,4 +88,25 @@ public class VideoPostController {
         videoService.recordView(id);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping(value = "/{id}/details")
+    public ResponseEntity<?> getVideoDetails(@PathVariable Long id, Principal principal){
+        try {
+            String username = (principal != null) ? principal.getName() : null;
+            return ResponseEntity.ok(videoService.getVideoDetails(id, username));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/like")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> toggleLike(@PathVariable Long id, Principal principal) {
+        try {
+            videoService.toggleLike(id, principal.getName());
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Action failed: " + e.getMessage());
+        }
+    }
 }
