@@ -1,5 +1,6 @@
 package com.isa.backend.service.impl;
 
+import com.isa.backend.dto.LocationDto;
 import com.isa.backend.dto.VideoPostResponseDto;
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.*;
@@ -42,6 +43,9 @@ public class VideoServiceImpl implements VideoService{
     @Autowired
     private VideoDislikeRepository videoDislikeRepository;
 
+    @Autowired
+    private LocationRepository locationRepository;
+
     @Value("${storage.video-path}")
     private String videoDir;
 
@@ -56,6 +60,22 @@ public class VideoServiceImpl implements VideoService{
         if(user == null){
             throw new RuntimeException("User with username " + username + "not found!");
         }
+
+        LocationDto locationDto = dto.getLocation();
+        if (locationDto == null) {
+            throw new RuntimeException("Location data is missing!");
+        }
+
+        Location location = locationRepository.findByLatitudeAndLongitude(locationDto.getLatitude(), locationDto.getLongitude())
+                .orElseGet(() -> {
+                    Location newLoc = new Location();
+                    newLoc.setDisplayName(locationDto.getDisplayName());
+                    newLoc.setLatitude(locationDto.getLatitude());
+                    newLoc.setLongitude(locationDto.getLongitude());
+                    newLoc.setCity(locationDto.getCity());
+                    newLoc.setCountry(locationDto.getCountry());
+                    return locationRepository.save(newLoc);
+                });
 
         Files.createDirectories(Paths.get(videoDir));
         Files.createDirectories(Paths.get(thumbnailDir));
@@ -76,7 +96,7 @@ public class VideoServiceImpl implements VideoService{
             post.setTitle(dto.getTitle());
             post.setDescription(dto.getDescription());
             post.setTags(dto.getTags());
-            post.setLocation(dto.getLocation());
+            post.setLocation(location);
             post.setVideoPath(videoPath.toString());
             post.setThumbnailPath(thumbnailPath.toString());
             post.setUser(user);
@@ -142,7 +162,17 @@ public class VideoServiceImpl implements VideoService{
         dto.setTags(video.getTags());
         dto.setVideoPath(video.getVideoPath());
         dto.setCreatedAt(video.getCreatedAt());
-        dto.setLocation(video.getLocation());
+
+        if (video.getLocation() != null) {
+            LocationDto locDto = new LocationDto();
+            locDto.setDisplayName(video.getLocation().getDisplayName());
+            locDto.setLatitude(video.getLocation().getLatitude());
+            locDto.setLongitude(video.getLocation().getLongitude());
+            locDto.setCity(video.getLocation().getCity());
+            locDto.setCountry(video.getLocation().getCountry());
+            dto.setLocation(locDto);
+        }
+
         dto.setViews(video.getViews());
         dto.setAuthorUsername(video.getUser().getUsername());
         dto.setFirstName(video.getUser().getFirstName());

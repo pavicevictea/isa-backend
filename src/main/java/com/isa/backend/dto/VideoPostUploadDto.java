@@ -6,7 +6,7 @@ public class VideoPostUploadDto {
     private String title;
     private String description;
     private List<String> tags;
-    private String location;
+    private LocationDto location;
 
     public VideoPostUploadDto() {}
 
@@ -19,6 +19,6 @@ public class VideoPostUploadDto {
     public List<String> getTags() { return tags; }
     public void setTags(List<String> tags) { this.tags = tags; }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public LocationDto getLocation() { return location; }
+    public void setLocation(LocationDto location) { this.location = location; }
 }

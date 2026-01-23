@@ -10,7 +10,7 @@ public class VideoPostResponseDto {
     private List<String> tags;
     private String videoPath;
     private LocalDateTime createdAt;
-    private String location;
+    private LocationDto location;
     private Long views;
     private String authorUsername;
     private String firstName;
@@ -39,8 +39,8 @@ public class VideoPostResponseDto {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public LocationDto getLocation() { return location; }
+    public void setLocation(LocationDto location) { this.location = location; }
 
     public Long getViews() { return views; }
     public void setViews(Long views) { this.views = views; }
