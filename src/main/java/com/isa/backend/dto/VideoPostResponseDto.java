@@ -15,6 +15,8 @@ public class VideoPostResponseDto {
     private String authorUsername;
     private Long likesCount;
     private boolean isLikedByCurrentUser;
+    private String firstName;
+    private String lastName;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -48,4 +50,10 @@ public class VideoPostResponseDto {
 
     public boolean isLikedByCurrentUser() { return isLikedByCurrentUser; }
     public void setLikedByCurrentUser(boolean likedByCurrentUser) { this.isLikedByCurrentUser = likedByCurrentUser; }
+
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 }

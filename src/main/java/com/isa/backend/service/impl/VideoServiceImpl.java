@@ -148,11 +148,17 @@ public class VideoServiceImpl implements VideoService{
         dto.setLocation(video.getLocation());
         dto.setViews(video.getViews());
         dto.setAuthorUsername(video.getUser().getUsername());
+        dto.setFirstName(video.getUser().getFirstName());
+        dto.setLastName(video.getUser().getLastName());
 
         dto.setLikesCount(videoLikeRepository.countByVideoId(id));
         if (currentUsername != null) {
-            User user = userRepository.findByUsername(currentUsername);
-            dto.setLikedByCurrentUser(videoLikeRepository.existsByUserIdAndVideoId(user.getId(), id));
+            User currentUser = userRepository.findByUsername(currentUsername);
+            if (currentUser != null) {
+                dto.setLikedByCurrentUser(videoLikeRepository.existsByUserIdAndVideoId(currentUser.getId(), id));
+            }
+        } else {
+            dto.setLikedByCurrentUser(false);
         }
         return dto;
     }
