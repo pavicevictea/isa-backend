@@ -106,7 +106,18 @@ public class VideoPostController {
             videoService.toggleLike(id, principal.getName());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Action failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Like action failed: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/dislike")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> toggleDislike(@PathVariable Long id, Principal principal) {
+        try {
+            videoService.toggleDislike(id, principal.getName());
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Dislike action failed: " + e.getMessage());
         }
     }
 }
