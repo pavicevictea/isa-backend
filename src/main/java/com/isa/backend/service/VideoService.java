@@ -1,5 +1,6 @@
 package com.isa.backend.service;
 
+import com.isa.backend.dto.VideoPostResponseDto;
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.VideoPost;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,4 +14,7 @@ public interface VideoService {
     VideoPost getVideoById(Long id);
     VideoPost findOnlyById(Long id);
     void recordView(Long id);
+    VideoPostResponseDto getVideoDetails(Long id, String currentUsername);
+    void toggleLike(Long videoId, String username);
+    void toggleDislike(Long videoId, String username);
 }

@@ -1,12 +1,9 @@
 package com.isa.backend.service.impl;
 
+import com.isa.backend.dto.VideoPostResponseDto;
 import com.isa.backend.dto.VideoPostUploadDto;
-import com.isa.backend.model.VideoPost;
-import com.isa.backend.model.User;
-import com.isa.backend.model.VideoView;
-import com.isa.backend.repository.VideoPostRepository;
-import com.isa.backend.repository.UserRepository;
-import com.isa.backend.repository.VideoViewRepository;
+import com.isa.backend.model.*;
+import com.isa.backend.repository.*;
 import com.isa.backend.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +35,12 @@ public class VideoServiceImpl implements VideoService{
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
+
+    @Autowired
+    private VideoLikeRepository videoLikeRepository;
+
+    @Autowired
+    private VideoDislikeRepository videoDislikeRepository;
 
     @Value("${storage.video-path}")
     private String videoDir;
@@ -125,5 +128,77 @@ public class VideoServiceImpl implements VideoService{
     public VideoPost findOnlyById(Long id) {
         return videoPostRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Video not found with id: " + id));
+    }
+
+    @Override
+    public VideoPostResponseDto getVideoDetails(Long id, String currentUsername) {
+        VideoPost video = videoPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Video not found"));
+
+        VideoPostResponseDto dto = new VideoPostResponseDto();
+        dto.setId(video.getId());
+        dto.setTitle(video.getTitle());
+        dto.setDescription(video.getDescription());
+        dto.setTags(video.getTags());
+        dto.setVideoPath(video.getVideoPath());
+        dto.setCreatedAt(video.getCreatedAt());
+        dto.setLocation(video.getLocation());
+        dto.setViews(video.getViews());
+        dto.setAuthorUsername(video.getUser().getUsername());
+        dto.setFirstName(video.getUser().getFirstName());
+        dto.setLastName(video.getUser().getLastName());
+
+        dto.setLikesCount(videoLikeRepository.countByVideoId(id));
+        dto.setDislikesCount(videoDislikeRepository.countByVideoId(id));
+
+        if (currentUsername != null) {
+            User currentUser = userRepository.findByUsername(currentUsername);
+            if (currentUser != null) {
+                dto.setLikedByCurrentUser(videoLikeRepository.existsByUserIdAndVideoId(currentUser.getId(), id));
+                dto.setDislikedByCurrentUser(videoDislikeRepository.existsByUserIdAndVideoId(currentUser.getId(), id));
+            }
+        } else {
+            dto.setLikedByCurrentUser(false);
+            dto.setDislikedByCurrentUser(false);
+        }
+        return dto;
+    }
+
+    @Override
+    @Transactional
+    public void toggleLike(Long videoId, String username) {
+        User user = userRepository.findByUsername(username);
+        VideoPost video = videoPostRepository.findById(videoId).orElseThrow();
+
+        videoDislikeRepository.findByUserIdAndVideoId(user.getId(), videoId)
+                .ifPresent(videoDislikeRepository::delete);
+
+        videoLikeRepository.findByUserIdAndVideoId(user.getId(), videoId)
+                .ifPresentOrElse(
+                        videoLikeRepository::delete,
+                        () -> videoLikeRepository.save(new VideoLike(user, video))
+                );
+
+        this.simpMessagingTemplate.convertAndSend("/socket-publisher/video-likes/" + videoId, videoLikeRepository.countByVideoId(videoId));
+        this.simpMessagingTemplate.convertAndSend("/socket-publisher/video-dislikes/" + videoId, videoDislikeRepository.countByVideoId(videoId));
+    }
+
+    @Override
+    @Transactional
+    public void toggleDislike(Long videoId, String username) {
+        User user = userRepository.findByUsername(username);
+        VideoPost video = videoPostRepository.findById(videoId).orElseThrow();
+
+        videoLikeRepository.findByUserIdAndVideoId(user.getId(), videoId)
+                .ifPresent(videoLikeRepository::delete);
+
+        videoDislikeRepository.findByUserIdAndVideoId(user.getId(), videoId)
+                .ifPresentOrElse(
+                        videoDislikeRepository::delete,
+                        () -> videoDislikeRepository.save(new VideoDislike(user, video))
+                );
+
+        this.simpMessagingTemplate.convertAndSend("/socket-publisher/video-likes/" + videoId, videoLikeRepository.countByVideoId(videoId));
+        this.simpMessagingTemplate.convertAndSend("/socket-publisher/video-dislikes/" + videoId, videoDislikeRepository.countByVideoId(videoId));
     }
 }
