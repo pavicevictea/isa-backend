@@ -13,10 +13,13 @@ public class VideoPostResponseDto {
     private String location;
     private Long views;
     private String authorUsername;
-    private Long likesCount;
-    private boolean isLikedByCurrentUser;
     private String firstName;
     private String lastName;
+
+    private Long likesCount;
+    private boolean isLikedByCurrentUser;
+    private Long dislikesCount;
+    private boolean isDislikedByCurrentUser;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -56,4 +59,10 @@ public class VideoPostResponseDto {
 
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public Long getDislikesCount() { return dislikesCount; }
+    public void setDislikesCount(Long dislikesCount) { this.dislikesCount = dislikesCount; }
+
+    public boolean isDislikedByCurrentUser() { return isDislikedByCurrentUser; }
+    public void setDislikedByCurrentUser(boolean dislikedByCurrentUser) { this.isDislikedByCurrentUser = dislikedByCurrentUser; }
 }

@@ -16,4 +16,5 @@ public interface VideoService {
     void recordView(Long id);
     VideoPostResponseDto getVideoDetails(Long id, String currentUsername);
     void toggleLike(Long videoId, String username);
+    void toggleDislike(Long videoId, String username);
 }
