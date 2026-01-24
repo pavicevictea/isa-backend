@@ -1,9 +1,11 @@
 package com.isa.backend;
 
 import com.isa.backend.model.User;
+import com.isa.backend.model.Location;
 import com.isa.backend.model.VideoPost;
 import com.isa.backend.repository.UserRepository;
 import com.isa.backend.repository.VideoPostRepository;
+import com.isa.backend.repository.LocationRepository;
 import com.isa.backend.service.VideoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ public class VideoViewsSimultaneousTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private LocationRepository locationRepository;
+
     @Test
     public void testMultipleUsersAtSameTime() throws InterruptedException {
         User testUser = new User();
@@ -38,6 +43,12 @@ public class VideoViewsSimultaneousTest {
         testUser.setEnabled(true);
         testUser = userRepository.save(testUser);
 
+        Location testLocation = new Location();
+        testLocation.setDisplayName("Test Location");
+        testLocation.setLatitude(44.7866);
+        testLocation.setLongitude(20.4489);
+        testLocation = locationRepository.save(testLocation);
+
         VideoPost video = new VideoPost();
         video.setTitle("Test Video");
         video.setDescription("Test Description");
@@ -46,7 +57,7 @@ public class VideoViewsSimultaneousTest {
         video.setViews(0L);
         video.setVideoPath("path/to/video.mp4");
         video.setThumbnailPath("path/to/thumbnail.jpg");
-        video.setLocation("Test Location");
+        video.setLocation(testLocation);
         video = videoPostRepository.save(video);
         Long videoId = video.getId();
 
@@ -57,7 +68,9 @@ public class VideoViewsSimultaneousTest {
         for (int i = 0; i < userNum; i++){
             executorService.execute(() -> {
                 try {
-                    videoService.getVideoById(videoId);
+                    videoService.recordView(videoId);
+                } catch (Exception e) {
+                    System.err.println("Error recording view: " + e.getMessage());
                 } finally {
                     latch.countDown();
                 }

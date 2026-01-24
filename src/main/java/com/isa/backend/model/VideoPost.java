@@ -41,8 +41,9 @@ public class VideoPost implements Serializable {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "location")
-    private String location;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "location_id")
+    private Location location;
 
     @Column(name = "views")
     private Long views = 0L;
@@ -75,8 +76,8 @@ public class VideoPost implements Serializable {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public Location getLocation() { return location; }
+    public void setLocation(Location location) { this.location = location; }
 
     public Long getViews() { return views; }
     public void setViews(Long views) { this.views = views; }
