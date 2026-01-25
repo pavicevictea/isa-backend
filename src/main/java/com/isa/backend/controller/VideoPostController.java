@@ -5,6 +5,8 @@ import com.isa.backend.model.VideoPost;
 import com.isa.backend.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.support.ResourceRegion;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -64,22 +66,15 @@ public class VideoPostController {
     }
 
     @GetMapping(value = "/{id}/stream")
-    public ResponseEntity<Resource> streamVideo(@PathVariable Long id) {
+    public ResponseEntity<ResourceRegion> streamVideo(@PathVariable Long id, @RequestHeader HttpHeaders headers) {
         try {
-            VideoPost post = videoService.findOnlyById(id);
-            Path path = Paths.get(post.getVideoPath());
-            Resource video = new UrlResource(path.toUri());
+            ResourceRegion region = videoService.getVideoStream(id, headers);
 
-            String contentType = Files.probeContentType(path);
-            if (contentType == null) {
-                contentType = "video/mp4"; // Default
-            }
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .body(video);
+            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                    .contentType(MediaType.parseMediaType("video/mp4"))
+                    .body(region);
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 

@@ -6,9 +6,13 @@ import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.*;
 import com.isa.backend.repository.*;
 import com.isa.backend.service.VideoService;
+import org.mp4parser.IsoFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.support.ResourceRegion;
+import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.List;
@@ -88,6 +93,15 @@ public class VideoServiceImpl implements VideoService{
         Files.copy(videoFile.getInputStream(), videoPath);
         Files.copy(thumbnailFile.getInputStream(), thumbnailPath);
 
+        long durationInSeconds = 0;
+        try (IsoFile isoFile = new IsoFile(videoPath.toString())) {
+            long durationUnits = isoFile.getMovieBox().getMovieHeaderBox().getDuration();
+            long timescale = isoFile.getMovieBox().getMovieHeaderBox().getTimescale();
+            durationInSeconds = durationUnits / timescale;
+        } catch (Exception e) {
+            durationInSeconds = 0;
+        }
+
         //Simulacija rollback operacije
         //try { Thread.sleep(3000); } catch (InterruptedException e) {}
 
@@ -100,6 +114,8 @@ public class VideoServiceImpl implements VideoService{
             post.setVideoPath(videoPath.toString());
             post.setThumbnailPath(thumbnailPath.toString());
             post.setUser(user);
+            post.setScheduledTime(dto.getScheduledTime());
+            post.setDurationSeconds(durationInSeconds);
 
             return videoPostRepository.save(post);
         } catch(Exception e) {
@@ -230,5 +246,42 @@ public class VideoServiceImpl implements VideoService{
 
         this.simpMessagingTemplate.convertAndSend("/socket-publisher/video-likes/" + videoId, videoLikeRepository.countByVideoId(videoId));
         this.simpMessagingTemplate.convertAndSend("/socket-publisher/video-dislikes/" + videoId, videoDislikeRepository.countByVideoId(videoId));
+    }
+
+    @Override
+    public ResourceRegion getVideoStream(Long id, HttpHeaders headers) throws IOException {
+        VideoPost video = videoPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Video not found with id: " + id));
+        UrlResource resource = new UrlResource(Paths.get(video.getVideoPath()).toUri());
+        long fileSize = resource.contentLength();
+        LocalDateTime now = LocalDateTime.now();
+
+        if (video.getScheduledTime() != null && now.isBefore(video.getScheduledTime())) {
+            throw new RuntimeException("Video is not available until " + video.getScheduledTime());
+        }
+
+        long start;
+        long chunkSize = 1024 * 1024;
+        if (video.getScheduledTime() != null && video.getDurationSeconds() != null && video.getDurationSeconds() > 0) {
+            long secondsSinceStart = Duration.between(video.getScheduledTime(), now).getSeconds();
+
+            if (secondsSinceStart < video.getDurationSeconds()) {
+                start = (secondsSinceStart * fileSize) / video.getDurationSeconds();
+            } else {
+                start = getStartFromHeaders(headers, fileSize);
+            }
+        } else {
+            start = getStartFromHeaders(headers, fileSize);
+        }
+
+        long rangeLength = Math.min(chunkSize, fileSize - start);
+        return new ResourceRegion(resource, start, rangeLength);
+    }
+
+    private long getStartFromHeaders(HttpHeaders headers, long fileSize) {
+        if (headers.getRange().isEmpty()) {
+            return 0;
+        }
+        return headers.getRange().get(0).getRangeStart(fileSize);
     }
 }
