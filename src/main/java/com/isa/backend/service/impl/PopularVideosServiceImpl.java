@@ -44,37 +44,46 @@ public class PopularVideosServiceImpl implements PopularVideosService {
     public void runEtl() {
         logger.info("ETL proces krenuo");
 
-        List<VideoView> views = extractRecentViews();
-        Map<Long, Double> scores = calculateScores(views);
-        saveTopThree(scores);
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        Map<Long, Double> scoresMap = new HashMap<>();
+
+        List<VideoView> views = videoViewRepository.findAllByViewedAtAfter(sevenDaysAgo);
+        for (VideoView v : views) {
+            processActivity(scoresMap, v.getVideoPost().getId(), v.getViewedAt(), 1.0);
+        }
+
+        videoLikeRepository.findAllByCreatedAtAfter(sevenDaysAgo).forEach(l ->
+                processActivity(scoresMap, l.getVideo().getId(), l.getCreatedAt(), 3.0)
+        );
+
+        commentRepository.findAllByCreatedAtAfter(sevenDaysAgo).forEach(c ->
+                processActivity(scoresMap, c.getVideo().getId(), c.getCreatedAt(), 5.0)
+        );
+
+        videoDislikeRepository.findAllByCreatedAtAfter(sevenDaysAgo).forEach(d ->
+                processActivity(scoresMap, d.getVideo().getId(), d.getCreatedAt(), -2.0)
+        );
+        saveTopThree(scoresMap);
 
         logger.info("ETL proces gotov");
     }
 
-    private List<VideoView> extractRecentViews() {
-        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
-        return videoViewRepository.findAllByViewedAtAfter(sevenDaysAgo);
-    }
+    private void processActivity(Map<Long, Double> scoresMap, Long videoId, LocalDateTime activityDate, double activityWeight) {
+        long daysOld = java.time.Duration.between(activityDate, LocalDateTime.now()).toDays();
 
-    private Map<Long, Double> calculateScores(List<VideoView> views){
-        Map<Long, Double> scoresMap = new HashMap<>();
-        for (VideoView v : views) {
-            Long videoId = v.getVideoPost().getId();
-            long daysOld = java.time.Duration.between(v.getViewedAt(), LocalDateTime.now()).toDays();
-
-            double weight = 7 - daysOld + 1;
-            if (weight < 1) {
-                weight = 1.0;
-            }
-
-            if (scoresMap.containsKey(videoId)) {
-                double currentScore = scoresMap.get(videoId);
-                scoresMap.put(videoId, currentScore + weight);
-            } else {
-                scoresMap.put(videoId, weight);
-            }
+        double timeWeight = 7 - daysOld + 1;
+        if (timeWeight < 1) {
+            timeWeight = 1.0;
         }
-        return scoresMap;
+
+        double finalPoints = timeWeight * activityWeight;
+
+        if (scoresMap.containsKey(videoId)) {
+            double currentScore = scoresMap.get(videoId);
+            scoresMap.put(videoId, currentScore + finalPoints);
+        } else {
+            scoresMap.put(videoId, finalPoints);
+        }
     }
 
     private void saveTopThree(Map<Long, Double> scores) {
@@ -129,5 +138,4 @@ public class PopularVideosServiceImpl implements PopularVideosService {
     public PopularVideos getLatest() {
         return popularVideosRepository.findTopByOrderByRunTimeDesc();
     }
-
 }
