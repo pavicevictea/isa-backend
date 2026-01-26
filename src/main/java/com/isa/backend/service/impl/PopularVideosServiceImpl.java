@@ -3,9 +3,7 @@ package com.isa.backend.service.impl;
 import com.isa.backend.model.PopularVideos;
 import com.isa.backend.model.VideoPost;
 import com.isa.backend.model.VideoView;
-import com.isa.backend.repository.PopularVideosRepository;
-import com.isa.backend.repository.VideoPostRepository;
-import com.isa.backend.repository.VideoViewRepository;
+import com.isa.backend.repository.*;
 import com.isa.backend.service.PopularVideosService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +29,15 @@ public class PopularVideosServiceImpl implements PopularVideosService {
 
     @Autowired
     private VideoPostRepository videoPostRepository;
+
+    @Autowired
+    private VideoLikeRepository videoLikeRepository;
+
+    @Autowired
+    private VideoDislikeRepository videoDislikeRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Override
     @Scheduled(cron = "${etl.cron}")
