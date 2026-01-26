@@ -20,6 +20,8 @@ public class VideoPostResponseDto {
     private boolean isLikedByCurrentUser;
     private Long dislikesCount;
     private boolean isDislikedByCurrentUser;
+    private LocalDateTime scheduledTime;
+    private Long durationSeconds;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -65,4 +67,10 @@ public class VideoPostResponseDto {
 
     public boolean isDislikedByCurrentUser() { return isDislikedByCurrentUser; }
     public void setDislikedByCurrentUser(boolean dislikedByCurrentUser) { this.isDislikedByCurrentUser = dislikedByCurrentUser; }
+
+    public LocalDateTime getScheduledTime() { return scheduledTime; }
+    public void setScheduledTime(LocalDateTime scheduledTime) { this.scheduledTime = scheduledTime; }
+
+    public Long getDurationSeconds() { return durationSeconds; }
+    public void setDurationSeconds(Long durationSeconds) { this.durationSeconds = durationSeconds; }
 }

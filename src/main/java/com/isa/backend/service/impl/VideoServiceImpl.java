@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.List;
@@ -178,6 +177,8 @@ public class VideoServiceImpl implements VideoService{
         dto.setTags(video.getTags());
         dto.setVideoPath(video.getVideoPath());
         dto.setCreatedAt(video.getCreatedAt());
+        dto.setScheduledTime(video.getScheduledTime());
+        dto.setDurationSeconds(video.getDurationSeconds());
 
         if (video.getLocation() != null) {
             LocationDto locDto = new LocationDto();
@@ -251,29 +252,16 @@ public class VideoServiceImpl implements VideoService{
     @Override
     public ResourceRegion getVideoStream(Long id, HttpHeaders headers) throws IOException {
         VideoPost video = videoPostRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Video not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Video not found"));
+
         UrlResource resource = new UrlResource(Paths.get(video.getVideoPath()).toUri());
         long fileSize = resource.contentLength();
-        LocalDateTime now = LocalDateTime.now();
-
-        if (video.getScheduledTime() != null && now.isBefore(video.getScheduledTime())) {
-            throw new RuntimeException("Video is not available until " + video.getScheduledTime());
+        if (video.getScheduledTime() != null && LocalDateTime.now().isBefore(video.getScheduledTime())) {
+            return new ResourceRegion(resource, 0, 0);
         }
 
-        long start;
+        long start = getStartFromHeaders(headers, fileSize);
         long chunkSize = 1024 * 1024;
-        if (video.getScheduledTime() != null && video.getDurationSeconds() != null && video.getDurationSeconds() > 0) {
-            long secondsSinceStart = Duration.between(video.getScheduledTime(), now).getSeconds();
-
-            if (secondsSinceStart < video.getDurationSeconds()) {
-                start = (secondsSinceStart * fileSize) / video.getDurationSeconds();
-            } else {
-                start = getStartFromHeaders(headers, fileSize);
-            }
-        } else {
-            start = getStartFromHeaders(headers, fileSize);
-        }
-
         long rangeLength = Math.min(chunkSize, fileSize - start);
         return new ResourceRegion(resource, start, rangeLength);
     }
