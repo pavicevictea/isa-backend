@@ -4,18 +4,15 @@ import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.VideoPost;
 import com.isa.backend.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.support.ResourceRegion;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.core.io.Resource;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.List;
 
@@ -64,22 +61,18 @@ public class VideoPostController {
     }
 
     @GetMapping(value = "/{id}/stream")
-    public ResponseEntity<Resource> streamVideo(@PathVariable Long id) {
+    public ResponseEntity<ResourceRegion> streamVideo(@PathVariable Long id, @RequestHeader HttpHeaders headers) {
         try {
-            VideoPost post = videoService.findOnlyById(id);
-            Path path = Paths.get(post.getVideoPath());
-            Resource video = new UrlResource(path.toUri());
-
-            String contentType = Files.probeContentType(path);
-            if (contentType == null) {
-                contentType = "video/mp4"; // Default
+            ResourceRegion region = videoService.getVideoStream(id, headers);
+            if (region.getCount() == 0) {
+                return ResponseEntity.status(HttpStatus.ACCEPTED).build();
             }
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .body(video);
+            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                    .contentType(MediaType.parseMediaType("video/mp4"))
+                    .body(region);
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

@@ -48,6 +48,12 @@ public class VideoPost implements Serializable {
     @Column(name = "views")
     private Long views = 0L;
 
+    @Column(name = "scheduled_time")
+    private LocalDateTime scheduledTime;
+
+    @Column(name = "duration_seconds")
+    private Long durationSeconds;
+
     public VideoPost(){
         this.createdAt = LocalDateTime.now();
     }
@@ -81,4 +87,10 @@ public class VideoPost implements Serializable {
 
     public Long getViews() { return views; }
     public void setViews(Long views) { this.views = views; }
+
+    public LocalDateTime getScheduledTime() { return scheduledTime; }
+    public void setScheduledTime(LocalDateTime scheduledTime) { this.scheduledTime = scheduledTime; }
+
+    public Long getDurationSeconds() { return durationSeconds; }
+    public void setDurationSeconds(Long durationSeconds) { this.durationSeconds = durationSeconds; }
 }

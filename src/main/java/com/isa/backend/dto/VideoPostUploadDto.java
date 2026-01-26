@@ -1,5 +1,6 @@
 package com.isa.backend.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class VideoPostUploadDto {
@@ -7,6 +8,8 @@ public class VideoPostUploadDto {
     private String description;
     private List<String> tags;
     private LocationDto location;
+    private LocalDateTime scheduledTime;
+    private Long durationSeconds;
 
     public VideoPostUploadDto() {}
 
@@ -21,4 +24,10 @@ public class VideoPostUploadDto {
 
     public LocationDto getLocation() { return location; }
     public void setLocation(LocationDto location) { this.location = location; }
+
+    public LocalDateTime getScheduledTime() { return scheduledTime; }
+    public void setScheduledTime(LocalDateTime scheduledTime) { this.scheduledTime = scheduledTime; }
+
+    public Long getDurationSeconds() { return durationSeconds; }
+    public void setDurationSeconds(Long durationSeconds) { this.durationSeconds = durationSeconds; }
 }
