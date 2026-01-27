@@ -3,6 +3,7 @@ package com.isa.backend.model;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "VIDEO_DISLIKES", uniqueConstraints = {
@@ -22,11 +23,15 @@ public class VideoDislike implements Serializable {
     @JoinColumn(name = "video_id", nullable = false)
     private VideoPost video;
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
     public VideoDislike() {}
 
     public VideoDislike(User user, VideoPost video){
         this.user = user;
         this.video = video;
+        this.createdAt = LocalDateTime.now();
     }
 
     public Long getId() { return id; }
@@ -37,4 +42,7 @@ public class VideoDislike implements Serializable {
 
     public VideoPost getVideo() { return video; }
     public void setVideo(VideoPost video) { this.video = video; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

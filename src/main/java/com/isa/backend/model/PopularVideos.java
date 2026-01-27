@@ -36,6 +36,9 @@ public class PopularVideos {
     @Column
     private Double thirdVideoScore;
 
+    @Column
+    private String country;
+
     public PopularVideos() {}
 
     public Long getId() { return id; }
@@ -70,4 +73,7 @@ public class PopularVideos {
 
     public Double getThirdVideoScore() { return thirdVideoScore; }
     public void setThirdVideoScore(Double thirdVideoScore) { this.thirdVideoScore = thirdVideoScore; }
+
+    public String getCountry() { return country; }
+    public void setCountry(String country) { this.country = country; }
 }

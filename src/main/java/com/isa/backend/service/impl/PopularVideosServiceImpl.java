@@ -1,11 +1,7 @@
 package com.isa.backend.service.impl;
 
-import com.isa.backend.model.PopularVideos;
-import com.isa.backend.model.VideoPost;
-import com.isa.backend.model.VideoView;
-import com.isa.backend.repository.PopularVideosRepository;
-import com.isa.backend.repository.VideoPostRepository;
-import com.isa.backend.repository.VideoViewRepository;
+import com.isa.backend.model.*;
+import com.isa.backend.repository.*;
 import com.isa.backend.service.PopularVideosService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,51 +28,92 @@ public class PopularVideosServiceImpl implements PopularVideosService {
     @Autowired
     private VideoPostRepository videoPostRepository;
 
+    @Autowired
+    private VideoLikeRepository videoLikeRepository;
+
+    @Autowired
+    private VideoDislikeRepository videoDislikeRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
     @Override
     @Scheduled(cron = "${etl.cron}")
     public void runEtl() {
         logger.info("ETL proces krenuo");
 
-        List<VideoView> views = extractRecentViews();
-        Map<Long, Double> scores = calculateScores(views);
-        saveTopThree(scores);
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        Map<String, Map<Long, Double>> countryScoresMap = new HashMap<>();
+
+        List<VideoView> views = videoViewRepository.findAllByViewedAtAfter(sevenDaysAgo);
+        for (VideoView v : views) {
+            String country = v.getVideoPost().getLocation().getCountry();
+            if (!countryScoresMap.containsKey(country)) {
+                countryScoresMap.put(country, new HashMap<>());
+            }
+            processActivity(countryScoresMap.get(country), v.getVideoPost().getId(), v.getViewedAt(), 1.0);
+        }
+
+        List<VideoLike> likes = videoLikeRepository.findAllByCreatedAtAfter(sevenDaysAgo);
+        for (VideoLike l : likes) {
+            String country = l.getVideo().getLocation().getCountry();
+            if (!countryScoresMap.containsKey(country)) {
+                countryScoresMap.put(country, new HashMap<>());
+            }
+            processActivity(countryScoresMap.get(country), l.getVideo().getId(), l.getCreatedAt(), 3.0);
+        }
+
+        List<Comment> comments = commentRepository.findAllByCreatedAtAfter(sevenDaysAgo);
+        for (Comment c : comments) {
+            String country = c.getVideo().getLocation().getCountry();
+            if (!countryScoresMap.containsKey(country)) {
+                countryScoresMap.put(country, new HashMap<>());
+            }
+            processActivity(countryScoresMap.get(country), c.getVideo().getId(), c.getCreatedAt(), 5.0);
+        }
+
+        List<VideoDislike> dislikes = videoDislikeRepository.findAllByCreatedAtAfter(sevenDaysAgo);
+        for (VideoDislike d : dislikes) {
+            String country = d.getVideo().getLocation().getCountry();
+            if (!countryScoresMap.containsKey(country)) {
+                countryScoresMap.put(country, new HashMap<>());
+            }
+            processActivity(countryScoresMap.get(country), d.getVideo().getId(), d.getCreatedAt(), -2.0);
+        }
+
+        for (Map.Entry<String, Map<Long, Double>> entry : countryScoresMap.entrySet()) {
+            saveTopThree(entry.getValue(), entry.getKey());
+        }
 
         logger.info("ETL proces gotov");
     }
 
-    private List<VideoView> extractRecentViews() {
-        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
-        return videoViewRepository.findAllByViewedAtAfter(sevenDaysAgo);
-    }
+    private void processActivity(Map<Long, Double> scoresMap, Long videoId, LocalDateTime activityDate, double activityWeight) {
+        long daysOld = java.time.Duration.between(activityDate, LocalDateTime.now()).toDays();
 
-    private Map<Long, Double> calculateScores(List<VideoView> views){
-        Map<Long, Double> scoresMap = new HashMap<>();
-        for (VideoView v : views) {
-            Long videoId = v.getVideoPost().getId();
-            long daysOld = java.time.Duration.between(v.getViewedAt(), LocalDateTime.now()).toDays();
-
-            double weight = 7 - daysOld + 1;
-            if (weight < 1) {
-                weight = 1.0;
-            }
-
-            if (scoresMap.containsKey(videoId)) {
-                double currentScore = scoresMap.get(videoId);
-                scoresMap.put(videoId, currentScore + weight);
-            } else {
-                scoresMap.put(videoId, weight);
-            }
+        double timeWeight = 7 - daysOld + 1;
+        if (timeWeight < 1) {
+            timeWeight = 1.0;
         }
-        return scoresMap;
+
+        double finalPoints = timeWeight * activityWeight;
+
+        if (scoresMap.containsKey(videoId)) {
+            double currentScore = scoresMap.get(videoId);
+            scoresMap.put(videoId, currentScore + finalPoints);
+        } else {
+            scoresMap.put(videoId, finalPoints);
+        }
     }
 
-    private void saveTopThree(Map<Long, Double> scores) {
+    private void saveTopThree(Map<Long, Double> scores, String countryName) {
         List<Map.Entry<Long, Double>> list = new ArrayList<>(scores.entrySet());
 
         list.sort((a, b) -> b.getValue().compareTo(a.getValue()));
 
         PopularVideos report = new PopularVideos();
         report.setRunTime(LocalDateTime.now());
+        report.setCountry(countryName);
 
         if (list.size() >= 1) {
             fillFirstPlace(report, list.get(0));
@@ -123,4 +160,8 @@ public class PopularVideosServiceImpl implements PopularVideosService {
         return popularVideosRepository.findTopByOrderByRunTimeDesc();
     }
 
+    @Override
+    public PopularVideos getLatestByCountry(String country) {
+        return popularVideosRepository.findTopByCountryOrderByRunTimeDesc(country);
+    }
 }

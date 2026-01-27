@@ -7,4 +7,5 @@ import org.springframework.stereotype.Service;
 public interface PopularVideosService {
     void runEtl();
     PopularVideos getLatest();
+    PopularVideos getLatestByCountry(String country);
 }

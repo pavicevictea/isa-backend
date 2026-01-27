@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="VIDEOVIEW")
+@Table(name="VIDEO_VIEW")
 public class VideoView {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

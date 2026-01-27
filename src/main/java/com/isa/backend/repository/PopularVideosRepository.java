@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PopularVideosRepository extends JpaRepository<PopularVideos, Long> {
     PopularVideos findTopByOrderByRunTimeDesc();
+    PopularVideos findTopByCountryOrderByRunTimeDesc(String country);
 }

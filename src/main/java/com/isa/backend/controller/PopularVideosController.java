@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -16,9 +17,12 @@ public class PopularVideosController {
     PopularVideosService popularVideosService;
 
     @GetMapping("/latest")
-    public ResponseEntity<PopularVideos> getLatestPopularVideos() {
-        PopularVideos latest = popularVideosService.getLatest();
+    public ResponseEntity<PopularVideos> getLatestPopularVideo(@RequestParam(required = false, defaultValue = "Serbia") String country) {
+        PopularVideos latest = popularVideosService.getLatestByCountry(country);
 
+        if (latest == null) {
+            latest = popularVideosService.getLatest();
+        }
         if (latest != null) {
             return ResponseEntity.ok(latest);
         } else {
