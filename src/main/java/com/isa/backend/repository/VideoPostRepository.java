@@ -21,9 +21,11 @@ public interface VideoPostRepository extends JpaRepository<VideoPost, Long>{
     @Query("UPDATE VideoPost v SET v.trendingScore = :score WHERE v.id = :id")
     void updateTrendingScore(@Param("id") Long id, @Param("score") Double score);
 
-    @Query("SELECT v FROM VideoPost v " +
-            "WHERE dwithin(v.location.coordinates, :userLocation, :radius) = true " +
-            "ORDER BY v.trendingScore DESC")
+    @Query(value = "SELECT v.* FROM video_posts v " +
+            "JOIN locations l ON v.location_id = l.id " +
+            "WHERE ST_DWithin(l.coordinates, :userLocation, :radius) = true " +
+            "ORDER BY v.trending_score DESC",
+            nativeQuery = true)
     List<VideoPost> findTrendingInRadius(@Param("userLocation") org.locationtech.jts.geom.Point userLocation,
                                          @Param("radius") Double radiusInMeters);
 }
