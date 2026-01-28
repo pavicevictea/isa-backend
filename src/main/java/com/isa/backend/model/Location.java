@@ -1,7 +1,7 @@
 package com.isa.backend.model;
 
 import jakarta.persistence.*;
-
+import org.locationtech.jts.geom.Point;
 import java.io.Serializable;
 
 @Entity
@@ -29,6 +29,9 @@ public class Location implements Serializable {
 
     @Column(name = "country")
     private String country;
+
+    @Column(columnDefinition = "geometry(Point, 4326)")
+    private Point coordinates;
 
     public Location() {}
 

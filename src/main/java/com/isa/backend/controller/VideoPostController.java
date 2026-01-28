@@ -2,7 +2,9 @@ package com.isa.backend.controller;
 
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.VideoPost;
+import com.isa.backend.service.PopularVideosService;
 import com.isa.backend.service.VideoService;
+import com.isa.backend.service.impl.PopularVideosServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +25,9 @@ public class VideoPostController {
 
     @Autowired
     private VideoService videoService;
+
+    @Autowired
+    private PopularVideosService popularVideosService;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('USER')")
@@ -112,5 +117,16 @@ public class VideoPostController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Dislike action failed: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/trending-nearby")
+    public ResponseEntity<List<VideoPost>> getTrendingNearby(
+            @RequestParam Double lat,
+            @RequestParam Double lon,
+            @RequestParam(defaultValue = "50.0") Double radius) {
+
+        List<VideoPost> videos = popularVideosService.getTrendingNearUser(lat, lon, radius);
+
+        return ResponseEntity.ok(videos);
     }
 }

@@ -54,6 +54,9 @@ public class VideoPost implements Serializable {
     @Column(name = "duration_seconds")
     private Long durationSeconds;
 
+    @Column(name = "trending_score")
+    private Double trendingScore = 0.0;
+
     public VideoPost(){
         this.createdAt = LocalDateTime.now();
     }
@@ -93,4 +96,7 @@ public class VideoPost implements Serializable {
 
     public Long getDurationSeconds() { return durationSeconds; }
     public void setDurationSeconds(Long durationSeconds) { this.durationSeconds = durationSeconds; }
+
+    public Double getTrendingScore() { return trendingScore; }
+    public  void setTrendingScore(Double trendingScore) { this.trendingScore = trendingScore; }
 }
