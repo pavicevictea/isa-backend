@@ -4,6 +4,7 @@ import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.VideoPost;
 import com.isa.backend.service.PopularVideosService;
 import com.isa.backend.service.VideoService;
+import jakarta.servlet.http.HttpServletRequest;
 import com.isa.backend.service.impl.PopularVideosServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.ResourceRegion;
@@ -119,6 +120,12 @@ public class VideoPostController {
         }
     }
 
+    @GetMapping("/trending/local")
+    public ResponseEntity<List<VideoPost>> resolveUserLocation(@RequestParam(required = false) Double lat, @RequestParam(required = false) Double lon, HttpServletRequest request) {
+        String ip = request.getRemoteAddr();
+        return ResponseEntity.ok(videoService.resolveUserLocation(lat, lon, ip));
+    }
+}
     @GetMapping("/trending-nearby")
     public ResponseEntity<List<VideoPost>> getTrendingNearby(
             @RequestParam Double lat,

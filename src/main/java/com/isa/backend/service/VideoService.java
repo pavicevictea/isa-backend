@@ -20,4 +20,5 @@ public interface VideoService {
     void toggleLike(Long videoId, String username);
     void toggleDislike(Long videoId, String username);
     ResourceRegion getVideoStream(Long id, HttpHeaders headers) throws IOException;
+    List<VideoPost> resolveUserLocation(Double lat, Double lon, String ip);
 }
