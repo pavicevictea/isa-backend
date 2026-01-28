@@ -2,8 +2,10 @@ package com.isa.backend.controller;
 
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.VideoPost;
+import com.isa.backend.service.PopularVideosService;
 import com.isa.backend.service.VideoService;
 import jakarta.servlet.http.HttpServletRequest;
+import com.isa.backend.service.impl.PopularVideosServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +26,9 @@ public class VideoPostController {
 
     @Autowired
     private VideoService videoService;
+
+    @Autowired
+    private PopularVideosService popularVideosService;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('USER')")
@@ -119,5 +124,16 @@ public class VideoPostController {
     public ResponseEntity<List<VideoPost>> resolveUserLocation(@RequestParam(required = false) Double lat, @RequestParam(required = false) Double lon, HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         return ResponseEntity.ok(videoService.resolveUserLocation(lat, lon, ip));
+    }
+}
+    @GetMapping("/trending-nearby")
+    public ResponseEntity<List<VideoPost>> getTrendingNearby(
+            @RequestParam Double lat,
+            @RequestParam Double lon,
+            @RequestParam(defaultValue = "50.0") Double radius) {
+
+        List<VideoPost> videos = popularVideosService.getTrendingNearUser(lat, lon, radius);
+
+        return ResponseEntity.ok(videos);
     }
 }

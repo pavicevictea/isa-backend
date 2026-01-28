@@ -17,12 +17,9 @@ public class PopularVideosController {
     PopularVideosService popularVideosService;
 
     @GetMapping("/latest")
-    public ResponseEntity<PopularVideos> getLatestPopularVideo(@RequestParam(required = false, defaultValue = "Serbia") String country) {
-        PopularVideos latest = popularVideosService.getLatestByCountry(country);
+    public ResponseEntity<PopularVideos> getLatestPopularVideos() {
+        PopularVideos latest = popularVideosService.getLatest();
 
-        if (latest == null) {
-            latest = popularVideosService.getLatest();
-        }
         if (latest != null) {
             return ResponseEntity.ok(latest);
         } else {
