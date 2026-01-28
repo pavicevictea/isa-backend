@@ -3,6 +3,7 @@ package com.isa.backend.controller;
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.VideoPost;
 import com.isa.backend.service.VideoService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.HttpHeaders;
@@ -112,5 +113,11 @@ public class VideoPostController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Dislike action failed: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/trending/local")
+    public ResponseEntity<List<VideoPost>> resolveUserLocation(@RequestParam(required = false) Double lat, @RequestParam(required = false) Double lon, HttpServletRequest request) {
+        String ip = request.getRemoteAddr();
+        return ResponseEntity.ok(videoService.resolveUserLocation(lat, lon, ip));
     }
 }

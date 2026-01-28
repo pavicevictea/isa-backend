@@ -16,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 import java.util.List;
 
@@ -271,5 +273,31 @@ public class VideoServiceImpl implements VideoService{
             return 0;
         }
         return headers.getRange().get(0).getRangeStart(fileSize);
+    }
+
+    @Override
+    public List<VideoPost> resolveUserLocation(Double lat, Double lon, String ip) {
+        if (lat == null || lon == null) {
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                String targetIp = (ip == null || ip.contains("0:0:0:0") || ip.equals("127.0.0.1")) ? "" : ip;
+                String url = "http://ip-api.com/json/" + targetIp;
+                Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+                if (response != null && "success".equals(response.get("status"))) {
+                    lat = (Double) response.get("lat");
+                    lon = (Double) response.get("lon");
+                    String city = (String) response.get("city");
+                    System.out.println("Approximated location for IP " + ip + ": " + city + " (" + lat + ", " + lon + ")");
+                } else {
+                    lat = 44.7866;
+                    lon = 20.4489;
+                }
+            } catch (Exception e) {
+                lat = 44.7866;
+                lon = 20.4489;
+            }
+        }
+        return videoPostRepository.findAll();
     }
 }
