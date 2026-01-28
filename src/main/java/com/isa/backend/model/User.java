@@ -50,10 +50,6 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private List<Role> roles;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "location_id")
-    private Location location;
-
     public Long getId() {
         return id;
     }
@@ -128,8 +124,4 @@ public class User implements UserDetails {
     public String getActivationCode() { return activationCode; }
 
     public void setActivationCode(String activationCode) { this.activationCode = activationCode; }
-
-    public Location getLocation() { return location; }
-
-    public void setLocation(Location location) { this.location = location; }
 }

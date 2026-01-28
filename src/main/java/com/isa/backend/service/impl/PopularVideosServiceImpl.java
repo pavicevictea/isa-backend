@@ -43,47 +43,25 @@ public class PopularVideosServiceImpl implements PopularVideosService {
         logger.info("ETL proces krenuo");
 
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
-        Map<String, Map<Long, Double>> countryScoresMap = new HashMap<>();
+        Map<Long, Double> scoresMap = new HashMap<>();
 
-        List<VideoView> views = videoViewRepository.findAllByViewedAtAfter(sevenDaysAgo);
-        for (VideoView v : views) {
-            String country = v.getVideoPost().getLocation().getCountry();
-            if (!countryScoresMap.containsKey(country)) {
-                countryScoresMap.put(country, new HashMap<>());
-            }
-            processActivity(countryScoresMap.get(country), v.getVideoPost().getId(), v.getViewedAt(), 1.0);
+        videoViewRepository.findAllByViewedAtAfter(sevenDaysAgo).forEach(v ->
+                processActivity(scoresMap, v.getVideoPost().getId(), v.getViewedAt(), 1.0));
+
+        videoLikeRepository.findAllByCreatedAtAfter(sevenDaysAgo).forEach(l ->
+                processActivity(scoresMap, l.getVideo().getId(), l.getCreatedAt(), 3.0));
+
+        commentRepository.findAllByCreatedAtAfter(sevenDaysAgo).forEach(c ->
+                processActivity(scoresMap, c.getVideo().getId(), c.getCreatedAt(), 5.0));
+
+        videoDislikeRepository.findAllByCreatedAtAfter(sevenDaysAgo).forEach(d ->
+                processActivity(scoresMap, d.getVideo().getId(), d.getCreatedAt(), -2.0));
+
+        for (Map.Entry<Long, Double> entry : scoresMap.entrySet()) {
+            videoPostRepository.updateTrendingScore(entry.getKey(), entry.getValue());
         }
 
-        List<VideoLike> likes = videoLikeRepository.findAllByCreatedAtAfter(sevenDaysAgo);
-        for (VideoLike l : likes) {
-            String country = l.getVideo().getLocation().getCountry();
-            if (!countryScoresMap.containsKey(country)) {
-                countryScoresMap.put(country, new HashMap<>());
-            }
-            processActivity(countryScoresMap.get(country), l.getVideo().getId(), l.getCreatedAt(), 3.0);
-        }
-
-        List<Comment> comments = commentRepository.findAllByCreatedAtAfter(sevenDaysAgo);
-        for (Comment c : comments) {
-            String country = c.getVideo().getLocation().getCountry();
-            if (!countryScoresMap.containsKey(country)) {
-                countryScoresMap.put(country, new HashMap<>());
-            }
-            processActivity(countryScoresMap.get(country), c.getVideo().getId(), c.getCreatedAt(), 5.0);
-        }
-
-        List<VideoDislike> dislikes = videoDislikeRepository.findAllByCreatedAtAfter(sevenDaysAgo);
-        for (VideoDislike d : dislikes) {
-            String country = d.getVideo().getLocation().getCountry();
-            if (!countryScoresMap.containsKey(country)) {
-                countryScoresMap.put(country, new HashMap<>());
-            }
-            processActivity(countryScoresMap.get(country), d.getVideo().getId(), d.getCreatedAt(), -2.0);
-        }
-
-        for (Map.Entry<String, Map<Long, Double>> entry : countryScoresMap.entrySet()) {
-            saveTopThree(entry.getValue(), entry.getKey());
-        }
+        saveTopThree(scoresMap);
 
         logger.info("ETL proces gotov");
     }
@@ -106,14 +84,13 @@ public class PopularVideosServiceImpl implements PopularVideosService {
         }
     }
 
-    private void saveTopThree(Map<Long, Double> scores, String countryName) {
+    private void saveTopThree(Map<Long, Double> scores) {
         List<Map.Entry<Long, Double>> list = new ArrayList<>(scores.entrySet());
 
         list.sort((a, b) -> b.getValue().compareTo(a.getValue()));
 
         PopularVideos report = new PopularVideos();
         report.setRunTime(LocalDateTime.now());
-        report.setCountry(countryName);
 
         if (list.size() >= 1) {
             fillFirstPlace(report, list.get(0));
@@ -163,5 +140,13 @@ public class PopularVideosServiceImpl implements PopularVideosService {
     @Override
     public PopularVideos getLatestByCountry(String country) {
         return popularVideosRepository.findTopByCountryOrderByRunTimeDesc(country);
+    }
+
+    @Override
+    public List<VideoPost> getTrendingNearUser(Double lat, Double lon, Double radiusKm) {
+        org.locationtech.jts.geom.GeometryFactory gf = new org.locationtech.jts.geom.GeometryFactory(new org.locationtech.jts.geom.PrecisionModel(), 4326);
+        org.locationtech.jts.geom.Point userPoint = gf.createPoint(new org.locationtech.jts.geom.Coordinate(lon, lat));
+
+        return videoPostRepository.findTrendingInRadius(userPoint, radiusKm * 1000);
     }
 }

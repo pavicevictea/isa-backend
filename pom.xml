@@ -135,6 +135,10 @@
 			<artifactId>isoparser</artifactId>
 			<version>1.9.41</version>
 		</dependency>
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-spatial</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
