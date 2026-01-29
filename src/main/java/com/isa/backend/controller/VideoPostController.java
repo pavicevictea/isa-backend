@@ -125,7 +125,7 @@ public class VideoPostController {
         String ip = request.getRemoteAddr();
         return ResponseEntity.ok(videoService.resolveUserLocation(lat, lon, ip));
     }
-}
+
     @GetMapping("/trending-nearby")
     public ResponseEntity<List<VideoPost>> getTrendingNearby(
             @RequestParam Double lat,
