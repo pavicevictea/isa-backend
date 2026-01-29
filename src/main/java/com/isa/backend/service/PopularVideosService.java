@@ -10,6 +10,5 @@ import java.util.List;
 public interface PopularVideosService {
     void runEtl();
     PopularVideos getLatest();
-    PopularVideos getLatestByCountry(String country);
     List<VideoPost> getTrendingNearUser(Double lat, Double lon, Double radiusKm);
 }

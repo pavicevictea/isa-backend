@@ -5,6 +5,7 @@ import com.isa.backend.dto.VideoPostResponseDto;
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.*;
 import com.isa.backend.repository.*;
+import com.isa.backend.service.PopularVideosService;
 import com.isa.backend.service.VideoService;
 import org.mp4parser.IsoFile;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,11 +53,17 @@ public class VideoServiceImpl implements VideoService{
     @Autowired
     private LocationRepository locationRepository;
 
+    @Autowired
+    private PopularVideosService popularVideosService;
+
     @Value("${storage.video-path}")
     private String videoDir;
 
     @Value("${storage.thumbnail-path}")
     private String thumbnailDir;
+
+    @Value("${app.video.default-radius}")
+    private Double defaultRadius;
 
     @Override
     @Transactional(rollbackFor = Exception.class, timeout = 30)
@@ -298,6 +305,6 @@ public class VideoServiceImpl implements VideoService{
                 lon = 20.4489;
             }
         }
-        return videoPostRepository.findAll();
+        return popularVideosService.getTrendingNearUser(lat, lon, defaultRadius);
     }
 }

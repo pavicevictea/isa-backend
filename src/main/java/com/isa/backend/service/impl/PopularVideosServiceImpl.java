@@ -138,11 +138,6 @@ public class PopularVideosServiceImpl implements PopularVideosService {
     }
 
     @Override
-    public PopularVideos getLatestByCountry(String country) {
-        return popularVideosRepository.findTopByCountryOrderByRunTimeDesc(country);
-    }
-
-    @Override
     public List<VideoPost> getTrendingNearUser(Double lat, Double lon, Double radiusKm) {
         org.locationtech.jts.geom.GeometryFactory gf = new org.locationtech.jts.geom.GeometryFactory(new org.locationtech.jts.geom.PrecisionModel(), 4326);
         org.locationtech.jts.geom.Point userPoint = gf.createPoint(new org.locationtech.jts.geom.Coordinate(lon, lat));
