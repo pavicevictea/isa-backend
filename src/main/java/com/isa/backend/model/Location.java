@@ -1,5 +1,6 @@
 package com.isa.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.locationtech.jts.geom.Point;
 import java.io.Serializable;
@@ -30,6 +31,7 @@ public class Location implements Serializable {
     @Column(name = "country")
     private String country;
 
+    @JsonIgnore
     @Column(columnDefinition = "geometry(Point, 4326)")
     private Point coordinates;
 
@@ -52,4 +54,7 @@ public class Location implements Serializable {
 
     public String getCountry() { return country; }
     public void setCountry(String country) { this.country = country; }
+
+    public Point getCoordinates() { return coordinates; }
+    public void setCoordinates(Point coordinates) { this.coordinates = coordinates; }
 }

@@ -23,7 +23,7 @@ public interface VideoPostRepository extends JpaRepository<VideoPost, Long>{
 
     @Query(value = "SELECT v.* FROM video_posts v " +
             "JOIN locations l ON v.location_id = l.id " +
-            "WHERE ST_DWithin(l.coordinates, :userLocation, :radius) = true " +
+            "WHERE ST_DWithin(CAST(l.coordinates AS geography), CAST(:userLocation AS geography), :radius) = true " +
             "ORDER BY v.trending_score DESC",
             nativeQuery = true)
     List<VideoPost> findTrendingInRadius(@Param("userLocation") org.locationtech.jts.geom.Point userLocation,

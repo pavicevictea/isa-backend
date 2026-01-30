@@ -7,6 +7,10 @@ import com.isa.backend.model.*;
 import com.isa.backend.repository.*;
 import com.isa.backend.service.PopularVideosService;
 import com.isa.backend.service.VideoService;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.mp4parser.IsoFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -87,6 +91,9 @@ public class VideoServiceImpl implements VideoService{
                     newLoc.setLongitude(locationDto.getLongitude());
                     newLoc.setCity(locationDto.getCity());
                     newLoc.setCountry(locationDto.getCountry());
+                    GeometryFactory gf = new GeometryFactory(new PrecisionModel(), 4326);
+                    Point point = gf.createPoint(new Coordinate(locationDto.getLongitude(), locationDto.getLatitude()));
+                    newLoc.setCoordinates(point);
                     return locationRepository.save(newLoc);
                 });
 
