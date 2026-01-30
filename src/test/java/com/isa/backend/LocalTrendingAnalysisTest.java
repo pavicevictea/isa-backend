@@ -22,7 +22,7 @@ public class LocalTrendingAnalysisTest {
     // Optimal Measure and Latency.
     @Test
     public void testOptimalMeasureAndLatency() throws InterruptedException {
-        int requests = 50;
+        int requests = 100;
         StopWatch report = new StopWatch("\nOptimal Measure & Latency Analysis");
 
         // Clear cache to measure initial database response time
@@ -43,7 +43,7 @@ public class LocalTrendingAnalysisTest {
     // Geographic Area Simulation.
     @Test
     public void testAreaSimulationAndImpact() throws InterruptedException {
-        int requests = 50;
+        int requests = 100;
         StopWatch report = new StopWatch("\nArea Simulation (Database Focus)");
 
         // Scenario A: Hotspot - Heavy activity in a small area

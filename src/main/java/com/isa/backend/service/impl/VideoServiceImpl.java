@@ -290,6 +290,7 @@ public class VideoServiceImpl implements VideoService{
     }
 
     @Override
+    @Cacheable(value = "localTrending", key = "T(java.lang.Math).round(#lat * 100) + '_' + T(java.lang.Math).round(#lon * 100)")
     public List<VideoPost> resolveUserLocation(Double lat, Double lon, String ip) {
         if (lat == null || lon == null) {
             try {
