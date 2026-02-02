@@ -8,7 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +21,8 @@ import java.util.Map;
 @Service
 public class PopularVideosServiceImpl implements PopularVideosService {
     private static final Logger logger = LoggerFactory.getLogger(PopularVideosServiceImpl.class);
+
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     @Autowired
     private VideoViewRepository videoViewRepository;
@@ -139,9 +144,7 @@ public class PopularVideosServiceImpl implements PopularVideosService {
 
     @Override
     public List<VideoPost> getTrendingNearUser(Double lat, Double lon, Double radiusKm) {
-        org.locationtech.jts.geom.GeometryFactory gf = new org.locationtech.jts.geom.GeometryFactory(new org.locationtech.jts.geom.PrecisionModel(), 4326);
-        org.locationtech.jts.geom.Point userPoint = gf.createPoint(new org.locationtech.jts.geom.Coordinate(lon, lat));
-
+        Point userPoint = geometryFactory.createPoint(new Coordinate(lon, lat));
         return videoPostRepository.findTrendingInRadius(userPoint, radiusKm * 1000);
     }
 }
