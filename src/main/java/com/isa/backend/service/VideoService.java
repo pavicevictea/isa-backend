@@ -1,5 +1,6 @@
 package com.isa.backend.service;
 
+import com.isa.backend.dto.StreamingStatusDto;
 import com.isa.backend.dto.VideoPostResponseDto;
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.VideoPost;
@@ -21,4 +22,5 @@ public interface VideoService {
     void toggleDislike(Long videoId, String username);
     ResourceRegion getVideoStream(Long id, HttpHeaders headers) throws IOException;
     List<VideoPost> resolveUserLocation(Double lat, Double lon, String ip);
+    StreamingStatusDto getStreamingStatus(Long id);
 }

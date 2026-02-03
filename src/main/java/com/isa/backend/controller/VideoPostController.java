@@ -1,5 +1,6 @@
 package com.isa.backend.controller;
 
+import com.isa.backend.dto.StreamingStatusDto;
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.VideoPost;
 import com.isa.backend.service.PopularVideosService;
@@ -124,5 +125,10 @@ public class VideoPostController {
     public ResponseEntity<List<VideoPost>> resolveUserLocation(@RequestParam(required = false) Double lat, @RequestParam(required = false) Double lon, HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         return ResponseEntity.ok(videoService.resolveUserLocation(lat, lon, ip));
+    }
+
+    @GetMapping("/{id}/steaming-status")
+    public ResponseEntity<StreamingStatusDto> getSteamingStatus(@PathVariable Long id) {
+        return ResponseEntity.ok(videoService.getStreamingStatus(id));
     }
 }
