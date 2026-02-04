@@ -1,6 +1,7 @@
 package com.isa.backend.service.impl;
 
 import com.isa.backend.dto.LocationDto;
+import com.isa.backend.dto.StreamingStatusDto;
 import com.isa.backend.dto.VideoPostResponseDto;
 import com.isa.backend.dto.VideoPostUploadDto;
 import com.isa.backend.model.*;
@@ -314,5 +315,28 @@ public class VideoServiceImpl implements VideoService{
             }
         }
         return popularVideosService.getTrendingNearUser(lat, lon, defaultRadius);
+    }
+
+    @Override
+    public StreamingStatusDto getStreamingStatus(Long id) {
+        VideoPost video = videoPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException(("Video not found")));
+
+        LocalDateTime time = LocalDateTime.now();
+
+        if (video.getScheduledTime() == null) {
+            return new StreamingStatusDto(true, 0, "Normal playback");
+        }
+
+        long offset = java.time.Duration.between(video.getScheduledTime(), time).getSeconds();
+        if (offset < 0) {
+            return new StreamingStatusDto(false, offset, "Video starts in " + Math.abs(offset) + " seconds");
+        }
+
+        if (video.getDurationSeconds() != null && offset > video.getDurationSeconds()) {
+            return new StreamingStatusDto(true, 0, "Premiere finished");
+        }
+
+        return new StreamingStatusDto(true, offset, "Live premier");
     }
 }
