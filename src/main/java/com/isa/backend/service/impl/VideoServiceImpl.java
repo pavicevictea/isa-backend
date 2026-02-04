@@ -329,7 +329,7 @@ public class VideoServiceImpl implements VideoService{
         }
 
         long offset = java.time.Duration.between(video.getScheduledTime(), time).getSeconds();
-        if (offset > 0) {
+        if (offset < 0) {
             return new StreamingStatusDto(false, offset, "Video starts in " + Math.abs(offset) + " seconds");
         }
 
