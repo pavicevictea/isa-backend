@@ -1,0 +1,12 @@
+syntax = "proto3";
+option java_package = "com.isa.backend.dto";
+option java_outer_classname = "UploadEventProto";
+
+message UploadEvent {
+  string title = 1;
+  string author = 2;
+  int64 size = 3;
+  int64 durationSeconds = 4;
+  string videoPath = 5;
+  int64 createdAt = 6;
+}
