@@ -1,11 +1,9 @@
 package com.isa.backend.service.impl;
 
-import com.isa.backend.dto.LocationDto;
-import com.isa.backend.dto.StreamingStatusDto;
-import com.isa.backend.dto.VideoPostResponseDto;
-import com.isa.backend.dto.VideoPostUploadDto;
+import com.isa.backend.dto.*;
 import com.isa.backend.model.*;
 import com.isa.backend.repository.*;
+import com.isa.backend.service.MessageBenchmarkService; // Dodato
 import com.isa.backend.service.PopularVideosService;
 import com.isa.backend.service.VideoService;
 import org.locationtech.jts.geom.Coordinate;
@@ -61,6 +59,9 @@ public class VideoServiceImpl implements VideoService{
     @Autowired
     private PopularVideosService popularVideosService;
 
+    @Autowired
+    private MessageBenchmarkService benchmarkService;
+
     @Value("${storage.video-path}")
     private String videoDir;
 
@@ -72,7 +73,6 @@ public class VideoServiceImpl implements VideoService{
 
     @Override
     @Transactional(rollbackFor = Exception.class, timeout = 30)
-    //@Transactional(rollbackFor = Exception.class, timeout = 1)
     public VideoPost createVideoPost(VideoPostUploadDto dto, MultipartFile videoFile, MultipartFile thumbnailFile, String username) throws IOException {
         User user = userRepository.findByUsername(username);
         if(user == null){
@@ -118,9 +118,6 @@ public class VideoServiceImpl implements VideoService{
             durationInSeconds = 0;
         }
 
-        //Simulacija rollback operacije
-        //try { Thread.sleep(3000); } catch (InterruptedException e) {}
-
         try {
             VideoPost post = new VideoPost();
             post.setTitle(dto.getTitle());
@@ -133,7 +130,28 @@ public class VideoServiceImpl implements VideoService{
             post.setScheduledTime(dto.getScheduledTime());
             post.setDurationSeconds(durationInSeconds);
 
-            return videoPostRepository.save(post);
+            VideoPost savedPost = videoPostRepository.save(post);
+
+            UploadEventJSON mqEvent = new UploadEventJSON(
+                    savedPost.getTitle(),
+                    user.getUsername(),
+                    videoFile.getSize(),
+                    durationInSeconds,
+                    savedPost.getVideoPath(),
+                    System.currentTimeMillis()
+            );
+
+            // Send messages to RabbitMQ
+            benchmarkService.sendUploadEvents(mqEvent);
+
+            // Run comparison benchmark (50 iterations)
+            try {
+                benchmarkService.runComparison();
+            } catch (Exception e) {
+                System.err.println("MQ Benchmark failed: " + e.getMessage());
+            }
+
+            return savedPost;
         } catch(Exception e) {
             Files.deleteIfExists(videoPath);
             Files.deleteIfExists(thumbnailPath);
