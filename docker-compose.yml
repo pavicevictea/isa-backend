@@ -59,3 +59,13 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=123
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: isa-rabbitmq
+    ports:
+      - "5672:5672"   # Port za AMQP poruke
+      - "15672:15672" # Dashboard (Management UI)
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
