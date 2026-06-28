@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Import(IntegrationTestConfig.class)
-class ViewCounterIntegrationTest {
+class ViewCounterIntegrationTests {
 
     @Autowired private VideoService videoService;
     @Autowired private VideoPostRepository videoPostRepository;

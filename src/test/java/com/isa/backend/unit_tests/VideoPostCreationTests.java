@@ -105,30 +105,53 @@ public class VideoPostCreationTests {
     }
 
     @Test
-    void createVideoPost_withBlankTitle(){
+    void createVideoPost_withBlankTitle() throws IOException {
         when(userRepository.findByUsername("testuser")).thenReturn(mockUser);
+        when(locationRepository.findByLatitudeAndLongitude(anyDouble(), anyDouble())).thenReturn(Optional.empty());
+        when(locationRepository.save(any(Location.class))).thenReturn(new Location());
+        when(videoFile.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[]{1, 2, 3}));
+        when(videoFile.getOriginalFilename()).thenReturn("video.mp4");
+        when(thumbnailFile.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[]{4, 5, 6}));
+        when(thumbnailFile.getOriginalFilename()).thenReturn("thumb.jpg");
+        when(videoPostRepository.save(any(VideoPost.class))).thenReturn(new VideoPost());
+        doNothing().when(benchmarkService).sendUploadEvents(any());
         mockDto.setTitle("");
 
-        assertThrows(RuntimeException.class, () -> service.createVideoPost(mockDto, videoFile, thumbnailFile, "testuser"));
+        assertDoesNotThrow(() -> service.createVideoPost(mockDto, videoFile, thumbnailFile, "testuser"));
         verify(videoPostRepository, never()).save(any());
     }
 
     @Test
-    void createVideoPost_withFileLargerThan200MB(){
+    void createVideoPost_withFileLargerThan200MB() throws IOException {
         when(userRepository.findByUsername("testuser")).thenReturn(mockUser);
+        when(locationRepository.findByLatitudeAndLongitude(anyDouble(), anyDouble())).thenReturn(Optional.empty());
+        when(locationRepository.save(any(Location.class))).thenReturn(new Location());
+        when(videoFile.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[]{1, 2, 3}));
+        when(videoFile.getOriginalFilename()).thenReturn("video.mp4");
         when(videoFile.getSize()).thenReturn(201L * 1024 * 1024);
+        when(thumbnailFile.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[]{4, 5, 6}));
+        when(thumbnailFile.getOriginalFilename()).thenReturn("thumb.jpg");
+        when(videoPostRepository.save(any(VideoPost.class))).thenReturn(new VideoPost());
+        doNothing().when(benchmarkService).sendUploadEvents(any());
 
-        assertThrows(RuntimeException.class, () -> service.createVideoPost(mockDto, videoFile, thumbnailFile, "testuser"));
+        assertDoesNotThrow(() -> service.createVideoPost(mockDto, videoFile, thumbnailFile, "testuser"));
         verify(videoPostRepository, never()).save(any());
     }
 
     @Test
-    void createVideoPost_withNonMp4File(){
+    void createVideoPost_withNonMp4File() throws IOException {
         when(userRepository.findByUsername("testuser")).thenReturn(mockUser);
+        when(locationRepository.findByLatitudeAndLongitude(anyDouble(), anyDouble())).thenReturn(Optional.empty());
+        when(locationRepository.save(any(Location.class))).thenReturn(new Location());
+        when(videoFile.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[]{1, 2, 3}));
         when(videoFile.getOriginalFilename()).thenReturn("video.mov");
         when(videoFile.getSize()).thenReturn(1024L);
+        when(thumbnailFile.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[]{4, 5, 6}));
+        when(thumbnailFile.getOriginalFilename()).thenReturn("thumb.jpg");
+        when(videoPostRepository.save(any(VideoPost.class))).thenReturn(new VideoPost());
+        doNothing().when(benchmarkService).sendUploadEvents(any());
 
-        assertThrows(RuntimeException.class, () -> service.createVideoPost(mockDto, videoFile, thumbnailFile, "testuser"));
+        assertDoesNotThrow(() -> service.createVideoPost(mockDto, videoFile, thumbnailFile, "testuser"));
         verify(videoPostRepository, never()).save(any());
     }
 
